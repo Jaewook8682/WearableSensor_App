@@ -12,12 +12,6 @@
     <item android:id="@+id/menu_disconnect"
         android:title="@string/menu_disconnect"
         android:orderInCategory="3"/>
-    <item android:id="@+id/menu_help"
-        android:title="@string/menu_help"
-        android:orderInCategory="4"/>
-    <item android:id="@+id/menu_about"
-        android:title="@string/menu_about"
-        android:orderInCategory="5"/>
     <item android:id="@+id/menu_exit"
         android:title="@string/menu_exit"
         android:orderInCategory="6"/>

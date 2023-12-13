@@ -109,7 +109,7 @@ public class BleMainActivity extends AppCompatActivity {
     private ShowAlertDialogs showAlert;                                                             //Object that creates and shows all the alert pop ups used in the app
     private Handler connectTimeoutHandler;                                                          //Handler to provide a time out if connection attempt takes too long
     private String bleDeviceName, bleDeviceAddress;                                                 //Name and address of remote Bluetooth device
-    private TextView textDeviceNameAndAddress, textTemperature, tv_rx_;                                                      //To show device and status information on the screen
+    private TextView textDeviceNameAndAddress;                                                      //To show device and status information on the screen
     private enum StateConnection {DISCONNECTED, CONNECTING, DISCOVERING, CONNECTED, DISCONNECTING}  //States of the Bluetooth connection
     private StateConnection stateConnection;                                                        //State of Bluetooth connection
     private enum StateApp {STARTING_SERVICE, REQUEST_PERMISSION, ENABLING_BLUETOOTH, RUNNING}       //States of the app
@@ -120,7 +120,7 @@ public class BleMainActivity extends AppCompatActivity {
 
     private Timer timer = new Timer();
     private String[] arr_rcv = new String[300];
-    private String[] arr_rsp = new String[300];
+    private String[] arr_rsp;
     private Thread thread;
 
     @Override
@@ -179,11 +179,13 @@ public class BleMainActivity extends AppCompatActivity {
 
         String sendData = "g";
         EditText n_measure_ = findViewById(R.id.n_measure);
+
         Button bt_start = findViewById(R.id.start);
         Integer n_req = Integer.valueOf(String.valueOf(n_measure_.getText()));
         bt_start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                arr_rsp = new String[Integer.valueOf(String.valueOf(n_measure_.getText()))];
                 for(int i = 0; i < n_req; i++){
                     new Handler().postDelayed(new Runnable() {
                         @Override
@@ -199,12 +201,13 @@ public class BleMainActivity extends AppCompatActivity {
         clear_.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                chart_iv.
+                chart_iv.clear();
+                chart_res.clear();
+                Arrays.fill(arr_rcv, "0");
+                Arrays.fill(arr_rsp, "0");
             }
         });
     }
-
-
 
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -322,14 +325,6 @@ public class BleMainActivity extends AppCompatActivity {
                     stateConnection = StateConnection.DISCONNECTING;                                //StateConnection is used to determine whether disconnect event should trigger a popup to reconnect
                     updateConnectionState();                                                        //Update the screen and menus
                     bleService.disconnectBle();                                                     //Ask the BleService to disconnect from the Bluetooth device
-                    return true;
-                }
-                case R.id.menu_help: {                                                              //Menu option Help chosen
-                    showAlert.showHelpMenuDialog(this.getApplicationContext());                     //Show the AlertDialog that has the Help text
-                    return true;
-                }
-                case R.id.menu_about: {                                                             //Menu option About chosen
-                    showAlert.showAboutMenuDialog(this);                                    //Show the AlertDialog that has the About text
                     return true;
                 }
                 case R.id.menu_exit: {                                                              //Menu option Exit chosen
@@ -559,13 +554,13 @@ public class BleMainActivity extends AppCompatActivity {
                         String d12 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i * 4 + 3));
                         String d13 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i * 4 + 0));
                         String d14 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i * 4 + 1));
-                        grx_arr[i] = String.valueOf(Integer.valueOf(d11 + d12 + d13 + d14, 16));
+                        arr_rcv[i] = String.valueOf(Integer.valueOf(d11 + d12 + d13 + d14, 16));
 
                         String d21 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i * 4 + 402));
                         String d22 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i * 4 + 403));
                         String d23 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i * 4 + 400));
                         String d24 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i * 4 + 401));
-                        grx_arr[i + 100] = String.valueOf(Integer.valueOf(d21 + d22 + d23 + d24, 16));
+                        arr_rcv[i + 100] = String.valueOf(Integer.valueOf(d21 + d22 + d23 + d24, 16));
                     }
                 } else if(Hex.bytesToStringUppercase(newBytes).length() == 0){
                     Log.d("Empty", "Empty data received");
@@ -575,7 +570,7 @@ public class BleMainActivity extends AppCompatActivity {
                         String d2 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i*4+3));
                         String d3 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i*4+0));
                         String d4 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i*4+1));
-                        grx_arr[i] = String.valueOf(Integer.valueOf(d1 + d2 + d3 + d4, 16));
+                        arr_rcv[i] = String.valueOf(Integer.valueOf(d1 + d2 + d3 + d4, 16));
                     }
                 }
             } else if (d_num == 2) {
@@ -585,13 +580,13 @@ public class BleMainActivity extends AppCompatActivity {
                         String d12 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i * 4 + 3));
                         String d13 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i * 4 + 0));
                         String d14 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i * 4 + 1));
-                        grx_arr[i+100] = String.valueOf(Integer.valueOf(d11 + d12 + d13 + d14, 16));
+                        arr_rcv[i+100] = String.valueOf(Integer.valueOf(d11 + d12 + d13 + d14, 16));
 
                         String d21 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i * 4 + 402));
                         String d22 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i * 4 + 403));
                         String d23 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i * 4 + 400));
                         String d24 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i * 4 + 401));
-                        grx_arr[i+200] = String.valueOf(Integer.valueOf(d21 + d22 + d23 + d24, 16));
+                        arr_rcv[i+200] = String.valueOf(Integer.valueOf(d21 + d22 + d23 + d24, 16));
                     }
                     // draw graph
                     runOnUiThread(new Runnable() {
@@ -609,7 +604,7 @@ public class BleMainActivity extends AppCompatActivity {
                         String d2 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i*4+3));
                         String d3 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i*4+0));
                         String d4 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i*4+1));
-                        grx_arr[i+100] = String.valueOf(Integer.valueOf(d1 + d2 + d3 + d4, 16));
+                        arr_rcv[i+100] = String.valueOf(Integer.valueOf(d1 + d2 + d3 + d4, 16));
                     }
                 }
             } else{      // dnum == 3
@@ -623,7 +618,7 @@ public class BleMainActivity extends AppCompatActivity {
                         String d2 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i*4+3));
                         String d3 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i*4+0));
                         String d4 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i*4+1));
-                        grx_arr[i+200] = String.valueOf(Integer.valueOf(d1 + d2 + d3 + d4, 16));
+                        arr_rcv[i+200] = String.valueOf(Integer.valueOf(d1 + d2 + d3 + d4, 16));
                     }
                     // draw graph
                     runOnUiThread(new Runnable() {
@@ -636,14 +631,15 @@ public class BleMainActivity extends AppCompatActivity {
             }
 
             if(newBytes.length != 0) {
-                d_num = save_data(d_num, Hex.bytesToStringUppercase(newBytes));
+                if(Hex.bytesToStringUppercase(newBytes).length() > 400){
+                    d_num++;
+                }
                 d_num++;
             }else{
                 Log.d("zero", "zero received");
             }
             if(d_num >3){
                 d_num=1;
-                textTemperature.setText(textTemperature.getText() + "\n" + "==================================");
             }
         } catch (Exception e) {
             Log.e(TAG, "Oops, exception caught in " + e.getStackTrace()[0].getMethodName() + ": " + e.getMessage());
@@ -757,7 +753,8 @@ public class BleMainActivity extends AppCompatActivity {
 
     private void addEntry() {
 
-        LineData data = chart.getData();
+        LineData data = chart_iv.getData();
+
         if (data != null) {
             ILineDataSet set = data.getDataSetByIndex(0);
 
@@ -766,21 +763,14 @@ public class BleMainActivity extends AppCompatActivity {
                 data.addDataSet(set);
             }
             for(int i = 0; i < 300; i++){
-                Float rxd = Float.parseFloat(grx_arr[i]);
+                Float rxd = Float.parseFloat(arr_rcv[i]);
                 data.addEntry(new Entry(set.getEntryCount(), rxd), 0);
-                //Log.d("FLAT : ", String.valueOf((float) (Math.random()*40) + 30f));
                 data.notifyDataChanged();
 
-                chart.notifyDataSetChanged();
-                chart.setVisibleXRangeMaximum(10);
-                chart.moveViewToX(data.getEntryCount());
+                chart_iv.notifyDataSetChanged();
+                chart_iv.setVisibleXRangeMaximum(300);
+                chart_iv.moveViewToX(data.getEntryCount());
             }
-            String[] arr1 = Arrays.copyOfRange(grx_arr, 0, 100);
-            String[] arr2 = Arrays.copyOfRange(grx_arr, 100, 200);
-            String[] arr3 = Arrays.copyOfRange(grx_arr, 2, 300);
-            textTemperature.setText(textTemperature.getText() + "\n" + "New data received" + "\n" + Arrays.toString(arr1));
-            textTemperature.setText(textTemperature.getText() + "\n" + "New data received" + "\n" + Arrays.toString(arr2));
-            textTemperature.setText(textTemperature.getText() + "\n" + "New data received" + "\n" + Arrays.toString(arr3));
         }
 
 
