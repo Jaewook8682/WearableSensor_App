@@ -32,9 +32,11 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.StatFs;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
@@ -78,7 +80,12 @@ import com.jjoe64.graphview.series.DataPoint;
 
 
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.math.BigInteger;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -107,22 +114,14 @@ public class BleMainActivity extends AppCompatActivity {
     private StateConnection stateConnection;                                                        //State of Bluetooth connection
     private enum StateApp {STARTING_SERVICE, REQUEST_PERMISSION, ENABLING_BLUETOOTH, RUNNING}       //States of the app
     private StateApp stateApp;                                                                      //State of the app
-    private double GraphHorizontalPoint1 = 0d;                                                  //Current horizontal position to be plotted on the graph
-    private double GraphHorizontalPoint2 = 100d;                                                  //Current horizontal position to be plotted on the graph
-    private double GraphHorizontalPoint3 = 200d;                                                  //Current horizontal position to be plotted on the graph
-    private LineChart chart;
-
-    private FirebaseDatabase database;
+    private LineChart chart_iv, chart_res;
     private DatabaseReference databaseReference;
     private int d_num = 1;
 
     private Timer timer = new Timer();
-    private Float[] grx_arr = new Float[300];
-
-
-
-
-
+    private String[] arr_rcv = new String[300];
+    private String[] arr_rsp = new String[300];
+    private Thread thread;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -147,96 +146,65 @@ public class BleMainActivity extends AppCompatActivity {
         }
         connectTimeoutHandler = new Handler(Looper.getMainLooper());                                //Create a handler for a delayed runnable that will stop the connection attempt after a timeout
         textDeviceNameAndAddress = findViewById(R.id.deviceNameAndAddressText);                     //Get a reference to the TextView that will display the device name and address
-        textTemperature = findViewById(R.id.temperatureTextView);                                   //Get a reference to the TextView that will display the temperature
-        //ld_data_ = findViewById(R.id.ld_data);
-        tv_rx_ = findViewById(R.id.tv_rx);
 
         // Graph View
-        chart = (LineChart) findViewById(R.id.graph1);
-        chart.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
+        chart_iv = (LineChart) findViewById(R.id.graph_iv);
+        chart_iv.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
+        chart_iv.getAxisRight().setEnabled(false);
+        chart_iv.getLegend().setTextColor(Color.WHITE);
+        chart_iv.animateXY(2000, 2000);
+        chart_iv.invalidate();
+        LineData data1 = new LineData();
+        chart_iv.setData(data1);
 
-        chart.getAxisRight().setEnabled(false);
-        chart.getLegend().setTextColor(Color.WHITE);
-        chart.animateXY(2000, 2000);
-        chart.invalidate();
+        chart_res = (LineChart) findViewById(R.id.graph_iv);
+        chart_res.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
+        chart_res.getAxisRight().setEnabled(false);
+        chart_res.getLegend().setTextColor(Color.WHITE);
+        chart_res.animateXY(2000, 2000);
+        chart_res.invalidate();
+        LineData data2 = new LineData();
+        chart_res.setData(data2);
 
-        LineData data = new LineData();
-        chart.setData(data);
+        Button bt1_  = findViewById(R.id.bt1);
+        Button bt2_  = findViewById(R.id.bt2);
+        Button bt3_  = findViewById(R.id.bt3);
+        Button bt4_  = findViewById(R.id.bt4);
+        Button bt5_  = findViewById(R.id.bt5);
+        Button bt6_  = findViewById(R.id.bt6);
+        Button bt7_  = findViewById(R.id.bt7);
+        Button bt8_  = findViewById(R.id.bt8);
+        Button bt9_  = findViewById(R.id.bt9);
+        Button bt10_ = findViewById(R.id.bt10);
 
-
-        //Firebase
-        database = FirebaseDatabase.getInstance();
-        databaseReference = database.getReference("User");
-
-        EditText et_load_ = findViewById(R.id.et_load);
-        Button bt_load_ = findViewById(R.id.bt_load);
-        bt_load_.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //ld_data_.setText(null);
-                String load_id = et_load_.getText().toString();
-                search(load_id);
-                et_load_.setText(null);
-            }
-        });
-
-        Button bt_send_ = findViewById(R.id.bt_send);
-        EditText et_send_ = findViewById(R.id.et_send);
-
-        bt_send_.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String sendData = et_send_.getText().toString();
-                bleService.writeToTransparentUART(sendData.getBytes());
-                et_send_.setText(null);
-            }
-        });
-
-        // request data at certain interval
         String sendData = "g";
+        EditText n_measure_ = findViewById(R.id.n_measure);
         Button bt_start = findViewById(R.id.start);
+        Integer n_req = Integer.valueOf(String.valueOf(n_measure_.getText()));
         bt_start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                textTemperature.setText("Requesting Data : 5sec");
-                TimerTask timerTask = new TimerTask() {
-                    @Override
-                    public void run() {
-                        bleService.writeToTransparentUART(sendData.getBytes());
-                    }
-                };
-                timer.schedule(timerTask, 0, 1000);
+                for(int i = 0; i < n_req; i++){
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            bleService.writeToTransparentUART(sendData.getBytes());
+                        }
+                    }, 100);      //1000 = 1s
+                }
             }
         });
 
-        Button bt_stop = findViewById(R.id.stop);
-        bt_stop.setOnClickListener(new View.OnClickListener() {
+        Button clear_ = findViewById(R.id.clear);
+        clear_.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                timer.cancel();
-                textTemperature.setText("Stop Requesting Data");
+                chart_iv.
             }
         });
     }
 
-    private int save_data(int d_num, String value) {
-        SimpleDateFormat sdf = new SimpleDateFormat("MMddhhmmss");
-        Date now = new Date();
-        String dd = sdf.format(now);
-        String nn = "data"+ new String(String.valueOf(d_num));
-        if (value.length() > 400){
-            String s1 = value.substring(0, 400);
-            String s2 = value.substring(400, 800);
-            databaseReference.child(dd).child(nn).setValue(s1);
-            nn = "data"+ new String(String.valueOf(d_num+1));
-            databaseReference.child(dd).child(nn).setValue(s2);
-            d_num++;
-        } else{
-            databaseReference.child(dd).child(nn).setValue(value);
-        }
-        tv_rx_.setText("Received Data - saved as" + " - " + dd);
-        return d_num;
-    }
+
 
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -274,7 +242,9 @@ public class BleMainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();                                                                            //Call superclass (AppCompatActivity) onPause method
-        unregisterReceiver(bleServiceReceiver);                                                     //Unregister receiver that was registered in onResume()
+        unregisterReceiver(bleServiceReceiver);
+        if(thread != null)
+            thread.interrupt();
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -589,13 +559,13 @@ public class BleMainActivity extends AppCompatActivity {
                         String d12 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i * 4 + 3));
                         String d13 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i * 4 + 0));
                         String d14 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i * 4 + 1));
-                        grx_arr[i] = Float.valueOf(d11 + d12 + d13 + d14);
+                        grx_arr[i] = String.valueOf(Integer.valueOf(d11 + d12 + d13 + d14, 16));
 
                         String d21 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i * 4 + 402));
                         String d22 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i * 4 + 403));
                         String d23 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i * 4 + 400));
                         String d24 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i * 4 + 401));
-                        grx_arr[i + 100] = Float.valueOf(d21 + d22 + d23 + d24);
+                        grx_arr[i + 100] = String.valueOf(Integer.valueOf(d21 + d22 + d23 + d24, 16));
                     }
                 } else if(Hex.bytesToStringUppercase(newBytes).length() == 0){
                     Log.d("Empty", "Empty data received");
@@ -605,7 +575,7 @@ public class BleMainActivity extends AppCompatActivity {
                         String d2 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i*4+3));
                         String d3 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i*4+0));
                         String d4 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i*4+1));
-                        grx_arr[i] = Float.valueOf(d1 + d2 + d3 + d4);
+                        grx_arr[i] = String.valueOf(Integer.valueOf(d1 + d2 + d3 + d4, 16));
                     }
                 }
             } else if (d_num == 2) {
@@ -615,19 +585,19 @@ public class BleMainActivity extends AppCompatActivity {
                         String d12 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i * 4 + 3));
                         String d13 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i * 4 + 0));
                         String d14 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i * 4 + 1));
-                        grx_arr[i+100] = Float.valueOf(d11 + d12 + d13 + d14);
+                        grx_arr[i+100] = String.valueOf(Integer.valueOf(d11 + d12 + d13 + d14, 16));
 
                         String d21 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i * 4 + 402));
                         String d22 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i * 4 + 403));
                         String d23 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i * 4 + 400));
                         String d24 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i * 4 + 401));
-                        grx_arr[i+200] = Float.valueOf(d21 + d22 + d23 + d24);
+                        grx_arr[i+200] = String.valueOf(Integer.valueOf(d21 + d22 + d23 + d24, 16));
                     }
                     // draw graph
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            drawing();
+                            addEntry();
                         }
                     });
 
@@ -639,7 +609,7 @@ public class BleMainActivity extends AppCompatActivity {
                         String d2 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i*4+3));
                         String d3 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i*4+0));
                         String d4 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i*4+1));
-                        grx_arr[i+100] = Float.valueOf(d1 + d2 + d3 + d4);
+                        grx_arr[i+100] = String.valueOf(Integer.valueOf(d1 + d2 + d3 + d4, 16));
                     }
                 }
             } else{      // dnum == 3
@@ -653,13 +623,13 @@ public class BleMainActivity extends AppCompatActivity {
                         String d2 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i*4+3));
                         String d3 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i*4+0));
                         String d4 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i*4+1));
-                        grx_arr[i+200] = Float.valueOf(d1 + d2 + d3 + d4);
+                        grx_arr[i+200] = String.valueOf(Integer.valueOf(d1 + d2 + d3 + d4, 16));
                     }
                     // draw graph
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            drawing();
+                            addEntry();
                         }
                     });
                 }
@@ -785,70 +755,156 @@ public class BleMainActivity extends AppCompatActivity {
         });
     }
 
-    private void search(String id){
-        Log.d("ID", id);
-        DatabaseReference mdb = FirebaseDatabase.getInstance().getReference();
-        final int[] db_num = {1};
-        mdb.child("User").child(id).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for(DataSnapshot postSnapshot : snapshot.getChildren()){
-                    String value = postSnapshot.getValue().toString();
-                    Log.d("!@#", value);
-                    //ld_data_.setText(ld_data_.getText() + "\n" + "Data"+String.valueOf(db_num[0])+" : "+value);
-                    db_num[0]++;
-                    }
-
-                //Log.d("Database1", value.substring(1, 407));
-                //Log.d("Database2", value.substring(409, 815));
-                //Log.d("Database3", value.substring(817, 1223));
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("Error", "fail to load data");
-            }
-        });
-    }
-
-    private void drawing() {
+    private void addEntry() {
 
         LineData data = chart.getData();
+        if (data != null) {
+            ILineDataSet set = data.getDataSetByIndex(0);
 
-        if (data == null) {
-            data = new LineData();
-            chart.setData(data);
+            if (set == null) {
+                set = createSet();
+                data.addDataSet(set);
+            }
+            for(int i = 0; i < 300; i++){
+                Float rxd = Float.parseFloat(grx_arr[i]);
+                data.addEntry(new Entry(set.getEntryCount(), rxd), 0);
+                //Log.d("FLAT : ", String.valueOf((float) (Math.random()*40) + 30f));
+                data.notifyDataChanged();
+
+                chart.notifyDataSetChanged();
+                chart.setVisibleXRangeMaximum(10);
+                chart.moveViewToX(data.getEntryCount());
+            }
+            String[] arr1 = Arrays.copyOfRange(grx_arr, 0, 100);
+            String[] arr2 = Arrays.copyOfRange(grx_arr, 100, 200);
+            String[] arr3 = Arrays.copyOfRange(grx_arr, 2, 300);
+            textTemperature.setText(textTemperature.getText() + "\n" + "New data received" + "\n" + Arrays.toString(arr1));
+            textTemperature.setText(textTemperature.getText() + "\n" + "New data received" + "\n" + Arrays.toString(arr2));
+            textTemperature.setText(textTemperature.getText() + "\n" + "New data received" + "\n" + Arrays.toString(arr3));
         }
 
-        ILineDataSet set = data.getDataSetByIndex(0);
-        // set.addEntry(...); // can be called as well
 
-        if (set == null) {
-            set = createSet();
-            data.addDataSet(set);
+        // data saving in internal storage
+        String mtxt1 = Arrays.toString(grx_arr);
+
+        String time1 = new SimpleDateFormat("ddHHmmss").format(new Date());
+        try{
+            FileOutputStream fos = openFileOutput(time1, MODE_PRIVATE);
+            Log.d("time", time1);
+            Log.d("Available Memory0 : ", checkInternalStorageAllMemory());
+            fos.write(mtxt1.getBytes());
+            fos.close();
+            Log.d("Available Memory0 : ", checkInternalAvailableMemory());
+        } catch (IOException e){
+            e.printStackTrace();
         }
-        for(int i = 0; i < 300; i++) {
-            data.addEntry(new Entry((float) set.getEntryCount(), grx_arr[i]), 0);
-            data.notifyDataChanged();
-        }
-        // let the chart know it's data has changed
-        chart.notifyDataSetChanged();
-
-        chart.setVisibleXRangeMaximum(1000);
-        // this automatically refreshes the chart (calls invalidate())
-        chart.moveViewTo(data.getEntryCount(), 50f, YAxis.AxisDependency.LEFT);
-
     }
 
     private LineDataSet createSet() {
-        LineDataSet set = new LineDataSet(null, "Real-time Line Data");
-        set.setLineWidth(1f);
+        LineDataSet set = new LineDataSet(null, "Dynamic Data");
+        set.setFillAlpha(110);
+        set.setFillColor(Color.parseColor("#d7e7fa"));
+        set.setColor(Color.parseColor("#0B80C9"));
+        set.setCircleColor(Color.parseColor("#FFA1B4DC"));
+        //set.setCircleColorHole(Color.BLUE);
+        set.setValueTextColor(Color.WHITE);
         set.setDrawValues(false);
-        //set.setValueTextColor(getResources().getColor(Color.Color.WHITE));
-        //set.setColor(getResources().getColor(Color.WHITE));
-        set.setMode(LineDataSet.Mode.LINEAR);
+        set.setLineWidth(2);
+        set.setCircleRadius(6);
+        set.setDrawCircleHole(false);
         set.setDrawCircles(false);
-        set.setHighLightColor(Color.rgb(190, 190, 190));
+        set.setValueTextSize(9f);
+        set.setDrawFilled(true);
+
+        set.setAxisDependency(YAxis.AxisDependency.LEFT);
+        set.setHighLightColor(Color.rgb(244, 117, 117));
 
         return set;
+    }
+
+    private void feedMultiple() {
+        if (thread != null)
+            thread.interrupt();
+        final Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                addEntry();
+            }
+        };
+        thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    runOnUiThread(runnable);
+                    try {
+                        Thread.sleep(3000);
+                    } catch (InterruptedException ie) {
+                        ie.printStackTrace();
+                    }
+                }
+            }
+        });
+        thread.start();
+    }
+
+    private boolean isExternalMemoryAvailable(){
+        return Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
+    }
+
+    private String checkInternalStorageAllMemory() {
+        StatFs stat= new StatFs(Environment.getDataDirectory().getPath());
+        long blockSize = stat.getBlockSizeLong();
+        long totalBlocks = stat.getBlockCountLong();
+
+        return getFileSize(blockSize * totalBlocks);
+    }
+
+    private String checkInternalAvailableMemory() {
+        StatFs stat= new StatFs(Environment.getDataDirectory().getPath());
+        long blockSize = stat.getBlockSizeLong();
+        long availableBlocks = stat.getAvailableBlocksLong();
+
+        return getFileSize(blockSize * availableBlocks);
+    }
+
+    private String checkExternalStorageAllMemory() {
+        if(isExternalMemoryAvailable() == true){
+            StatFs stat = new StatFs(Environment.getExternalStorageDirectory().getPath());
+            long blockSize = stat.getBlockSizeLong();
+            long totalBlocks = stat.getBlockCountLong();
+
+            return getFileSize(totalBlocks * blockSize);
+        } else{
+            Log.d("Storage ERR", "ERR STRAGE");
+            return null;
+        }
+    }
+
+    private String checkExternalAvailableMemory() {
+        if(isExternalMemoryAvailable() == true){
+            File file = Environment.getExternalStorageDirectory();
+            StatFs stat = new StatFs(file.getPath());
+            long blockSize = stat.getBlockSizeLong();
+            long availableBlocks = stat.getAvailableBlocksLong();
+
+            return getFileSize(availableBlocks * blockSize);
+        } else{
+            Log.d("Storage ERR", "ERR STRAGE");
+            return null;
+        }
+    }
+
+    public String getFileSize(long size) {
+        if (size <= 0)
+            return "0";
+
+        final String[] units = new String[] { "B", "KB", "MB", "GB", "TB" };
+        int digitGroups = (int) (Math.log10(size) / Math.log10(1024));
+        return new DecimalFormat("#,##0.#").format(size / Math.pow(1024, digitGroups))
+                + " " + units[digitGroups];
+    }
+
+    private void loading(){
+
     }
 }
