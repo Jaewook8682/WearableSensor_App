@@ -43,22 +43,22 @@
             android:id="@+id/bt1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="bt1"/>
+            android:text="1"/>
         <Button
             android:id="@+id/bt2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="bt2"/>
+            android:text="2"/>
         <Button
             android:id="@+id/bt3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="bt3"/>
+            android:text="3"/>
         <Button
             android:id="@+id/bt4"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="bt4"/>
+            android:text="4"/>
     </LinearLayout>
 
     <LinearLayout
@@ -69,22 +69,22 @@
             android:id="@+id/bt5"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="bt5"/>
+            android:text="5"/>
         <Button
             android:id="@+id/bt6"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="bt6"/>
+            android:text="6"/>
         <Button
-            android:id="@+id/bt7"
+            android:id="@+id/btl"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="bt7"/>
+            android:text="l"/>
         <Button
-            android:id="@+id/bt8"
+            android:id="@+id/btp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="bt8"/>
+            android:text="p"/>
     </LinearLayout>
 
     <LinearLayout
@@ -92,16 +92,42 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
         <Button
-            android:id="@+id/bt9"
+            android:id="@+id/btq"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="bt9"/>
+            android:text="q"/>
         <Button
-            android:id="@+id/bt10"
+            android:id="@+id/bts"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="bt10"/>
+            android:text="s"/>
+        <Button
+            android:id="@+id/btg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="g"/>
+        <Button
+            android:id="@+id/bth"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="h"/>
     </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/btd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="d"/>
+        <Button
+            android:id="@+id/bta"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="a"/>
+    </LinearLayout>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">

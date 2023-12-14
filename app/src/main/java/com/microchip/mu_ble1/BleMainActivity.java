@@ -82,9 +82,11 @@ import com.jjoe64.graphview.series.DataPoint;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.sql.Array;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -116,12 +118,14 @@ public class BleMainActivity extends AppCompatActivity {
     private StateApp stateApp;                                                                      //State of the app
     private LineChart chart_iv, chart_res;
     private DatabaseReference databaseReference;
-    private int d_num = 1;
+    private int d_num = 1, measure_n, interval_n;
+    private float min_n;
 
     private Timer timer = new Timer();
     private String[] arr_rcv = new String[300];
     private String[] arr_rsp;
     private Thread thread;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -148,49 +152,159 @@ public class BleMainActivity extends AppCompatActivity {
         textDeviceNameAndAddress = findViewById(R.id.deviceNameAndAddressText);                     //Get a reference to the TextView that will display the device name and address
 
         // Graph View
-        chart_iv = (LineChart) findViewById(R.id.graph_iv);
-        chart_iv.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
-        chart_iv.getAxisRight().setEnabled(false);
-        chart_iv.getLegend().setTextColor(Color.WHITE);
-        chart_iv.animateXY(2000, 2000);
-        chart_iv.invalidate();
-        LineData data1 = new LineData();
-        chart_iv.setData(data1);
+        chart_iv  = findViewById(R.id.graph_iv);
+        chart_res = findViewById(R.id.graph_response);
 
-        chart_res = (LineChart) findViewById(R.id.graph_iv);
-        chart_res.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
-        chart_res.getAxisRight().setEnabled(false);
-        chart_res.getLegend().setTextColor(Color.WHITE);
-        chart_res.animateXY(2000, 2000);
-        chart_res.invalidate();
-        LineData data2 = new LineData();
-        chart_res.setData(data2);
+        chart_iv.getLegend().setEnabled(true);
+        chart_iv.setTouchEnabled(true);
+        chart_res.getLegend().setEnabled(true);
+        chart_res.setTouchEnabled(true);
 
-        Button bt1_  = findViewById(R.id.bt1);
-        Button bt2_  = findViewById(R.id.bt2);
-        Button bt3_  = findViewById(R.id.bt3);
-        Button bt4_  = findViewById(R.id.bt4);
-        Button bt5_  = findViewById(R.id.bt5);
-        Button bt6_  = findViewById(R.id.bt6);
-        Button bt7_  = findViewById(R.id.bt7);
-        Button bt8_  = findViewById(R.id.bt8);
-        Button bt9_  = findViewById(R.id.bt9);
-        Button bt10_ = findViewById(R.id.bt10);
 
-        String sendData = "g";
+        Button bt1_ = findViewById(R.id.bt1);
+        Button bt2_ = findViewById(R.id.bt2);
+        Button bt3_ = findViewById(R.id.bt3);
+        Button bt4_ = findViewById(R.id.bt4);
+        Button bt5_ = findViewById(R.id.bt5);
+        Button bt6_ = findViewById(R.id.bt6);
+        Button btl_ = findViewById(R.id.btl);
+        Button btp_ = findViewById(R.id.btp);
+        Button btq_ = findViewById(R.id.btq);
+        Button bts_ = findViewById(R.id.bts);
+        Button btg_ = findViewById(R.id.btg);
+        Button bth_ = findViewById(R.id.bth);
+        Button btd_ = findViewById(R.id.btd);
+        Button bta_ = findViewById(R.id.bta);
+
+
+        // @@@ button functions @@@
+        bt1_.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String sendData = "1";
+                bleService.writeToTransparentUART(sendData.getBytes());
+            }
+        });
+
+        bt2_.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String sendData = "2";
+                bleService.writeToTransparentUART(sendData.getBytes());
+            }
+        });
+
+        bt3_.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String sendData = "3";
+                bleService.writeToTransparentUART(sendData.getBytes());
+            }
+        });
+
+        bt4_.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String sendData = "4";
+                bleService.writeToTransparentUART(sendData.getBytes());
+            }
+        });
+
+        bt5_.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String sendData = "5";
+                bleService.writeToTransparentUART(sendData.getBytes());
+            }
+        });
+
+        bt6_.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String sendData = "6";
+                bleService.writeToTransparentUART(sendData.getBytes());
+            }
+        });
+
+        btl_.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String sendData = "l";
+                bleService.writeToTransparentUART(sendData.getBytes());
+            }
+        });
+
+        btp_.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String sendData = "p";
+                bleService.writeToTransparentUART(sendData.getBytes());
+            }
+        });
+
+        btq_.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String sendData = "q";
+                bleService.writeToTransparentUART(sendData.getBytes());
+            }
+        });
+
+        bts_.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String sendData = "s";
+                bleService.writeToTransparentUART(sendData.getBytes());
+            }
+        });
+
+        btg_.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String sendData = "g";
+                bleService.writeToTransparentUART(sendData.getBytes());
+            }
+        });
+
+        bth_.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String sendData = "h";
+                bleService.writeToTransparentUART(sendData.getBytes());
+            }
+        });
+
+        btd_.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String sendData = "d";
+                bleService.writeToTransparentUART(sendData.getBytes());
+            }
+        });
+
+        bta_.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String sendData = "a";
+                bleService.writeToTransparentUART(sendData.getBytes());
+            }
+        });
+        // @@@ button functions @@@
+
         EditText n_measure_ = findViewById(R.id.n_measure);
-
         Button bt_start = findViewById(R.id.start);
-        Integer n_req = Integer.valueOf(String.valueOf(n_measure_.getText()));
         bt_start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                arr_rsp = new String[Integer.valueOf(String.valueOf(n_measure_.getText()))];
-                for(int i = 0; i < n_req; i++){
+                measure_n = Integer.valueOf(String.valueOf(n_measure_.getText()));
+                interval_n = 0;
+                for(int i = 0; i < measure_n; i++){
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
+                            String sendData = "g";
                             bleService.writeToTransparentUART(sendData.getBytes());
+                            interval_n ++;
                         }
                     }, 100);      //1000 = 1s
                 }
@@ -200,11 +314,29 @@ public class BleMainActivity extends AppCompatActivity {
         Button clear_ = findViewById(R.id.clear);
         clear_.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
+            public void onClick(View view) {;
                 chart_iv.clear();
                 chart_res.clear();
                 Arrays.fill(arr_rcv, "0");
                 Arrays.fill(arr_rsp, "0");
+            }
+        });
+
+        EditText et_save_ = findViewById(R.id.et_save);
+        Button bt_save_   = findViewById(R.id.bt_save);
+        bt_save_.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    FileOutputStream fos = openFileOutput(String.valueOf(et_save_.getText()), MODE_PRIVATE);
+                    /*
+                    fos.write(@@그래프1@@)
+                    fos.write(@@그래프2@@) 합치자 1,2
+                    fos.close();
+                     */
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }
@@ -753,63 +885,36 @@ public class BleMainActivity extends AppCompatActivity {
 
     private void addEntry() {
 
-        LineData data = chart_iv.getData();
+        ArrayList<Entry> val_iv  = new ArrayList<>();
+        ArrayList<Entry> val_res = new ArrayList<>();
+        LineData chrtx_iv  = new LineData();
+        LineData chrtx_res = new LineData();
 
-        if (data != null) {
-            ILineDataSet set = data.getDataSetByIndex(0);
+        min_n = Float.parseFloat(arr_rcv[0]);
+        int min_idx = 0;
 
-            if (set == null) {
-                set = createSet();
-                data.addDataSet(set);
-            }
-            for(int i = 0; i < 300; i++){
-                Float rxd = Float.parseFloat(arr_rcv[i]);
-                data.addEntry(new Entry(set.getEntryCount(), rxd), 0);
-                data.notifyDataChanged();
-
-                chart_iv.notifyDataSetChanged();
-                chart_iv.setVisibleXRangeMaximum(300);
-                chart_iv.moveViewToX(data.getEntryCount());
+        for(int i = 0; i < 300; i++){
+            val_iv.add(new Entry((float) i, Float.parseFloat(arr_rcv[i])));
+            if(min_n > Float.parseFloat(arr_rcv[i])){
+                min_n = Float.parseFloat(arr_rcv[i]);
+                min_idx = i;
             }
         }
+        LineDataSet lineDataSet_iv = new LineDataSet(val_iv, "iv"+interval_n);
+        lineDataSet_iv.setColor(Color.rgb(Math.abs(255-interval_n*1), Math.abs(255-interval_n*5), Math.abs(255-interval_n*10)));
 
+        val_res.add(new Entry((float) interval_n,(float) min_idx));
+        LineDataSet lineDataSet_res = new LineDataSet(val_res, "response"+interval_n);
+        lineDataSet_res.setColor(Color.rgb(Math.abs(255-interval_n*1), Math.abs(255-interval_n*3), Math.abs(255-interval_n*5)));
 
-        // data saving in internal storage
-        String mtxt1 = Arrays.toString(grx_arr);
+        chrtx_iv.addDataSet(lineDataSet_iv);
+        chrtx_res.addDataSet(lineDataSet_res);
 
-        String time1 = new SimpleDateFormat("ddHHmmss").format(new Date());
-        try{
-            FileOutputStream fos = openFileOutput(time1, MODE_PRIVATE);
-            Log.d("time", time1);
-            Log.d("Available Memory0 : ", checkInternalStorageAllMemory());
-            fos.write(mtxt1.getBytes());
-            fos.close();
-            Log.d("Available Memory0 : ", checkInternalAvailableMemory());
-        } catch (IOException e){
-            e.printStackTrace();
-        }
-    }
+        chart_iv.setData(chrtx_iv);
+        chart_res.setData(chrtx_res);
 
-    private LineDataSet createSet() {
-        LineDataSet set = new LineDataSet(null, "Dynamic Data");
-        set.setFillAlpha(110);
-        set.setFillColor(Color.parseColor("#d7e7fa"));
-        set.setColor(Color.parseColor("#0B80C9"));
-        set.setCircleColor(Color.parseColor("#FFA1B4DC"));
-        //set.setCircleColorHole(Color.BLUE);
-        set.setValueTextColor(Color.WHITE);
-        set.setDrawValues(false);
-        set.setLineWidth(2);
-        set.setCircleRadius(6);
-        set.setDrawCircleHole(false);
-        set.setDrawCircles(false);
-        set.setValueTextSize(9f);
-        set.setDrawFilled(true);
-
-        set.setAxisDependency(YAxis.AxisDependency.LEFT);
-        set.setHighLightColor(Color.rgb(244, 117, 117));
-
-        return set;
+        chart_iv.invalidate();
+        chart_res.invalidate();
     }
 
     private void feedMultiple() {
