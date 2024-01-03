@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -26,7 +24,6 @@
             tools:layout_editor_absoluteY="4dp" />
 
     </androidx.appcompat.widget.Toolbar>
-
     <TextView
         android:id="@+id/deviceNameAndAddressText"
         android:layout_width="wrap_content"
@@ -34,103 +31,66 @@
         android:layout_marginTop="8dp"
         android:text="@string/not_connected"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"/>
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        <Button
-            android:id="@+id/bt1"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp">
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="1"/>
+            android:text="Current Setting"
+            android:textSize="20dp"/>
         <Button
-            android:id="@+id/bt2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="2"/>
-        <Button
-            android:id="@+id/bt3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="3"/>
-        <Button
-            android:id="@+id/bt4"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="4"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        <Button
-            android:id="@+id/bt5"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="5"/>
-        <Button
-            android:id="@+id/bt6"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="6"/>
-        <Button
-            android:id="@+id/btl"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="l"/>
-        <Button
-            android:id="@+id/btp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="p"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        <Button
-            android:id="@+id/btq"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="q"/>
-        <Button
-            android:id="@+id/bts"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="s"/>
+            android:text="Setting"
+            android:layout_marginLeft="10dp"
+            android:id="@+id/set_btn"/>
         <Button
             android:id="@+id/btg"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="g"/>
         <Button
-            android:id="@+id/bth"
+            android:id="@+id/btt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="h"/>
+            android:text="t"/>
     </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="7dp"
+        android:text="Vds     : "
+        android:textSize="15dp"
+        android:id="@+id/vds_tv2"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="7dp"
+        android:text="Gain    : "
+        android:textSize="15dp"
+        android:id="@+id/gain_tv2"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="7dp"
+        android:text="Action : "
+        android:textSize="15dp"
+        android:id="@+id/action_tv2"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="7dp"
+        android:text="Duty Cycle : "
+        android:textSize="15dp"
+        android:id="@+id/duty_tv2"/>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        <Button
-            android:id="@+id/btd"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="d"/>
-        <Button
-            android:id="@+id/bta"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="a"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_marginTop="10dp">
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -143,14 +103,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Start"
-            android:id="@+id/start"
-            android:layout_marginLeft="10dp"/>
+            android:id="@+id/start" />
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="clear"
-            android:id="@+id/clear"
-            android:layout_marginLeft="10dp"/>
+            android:id="@+id/clear"/>
     </LinearLayout>
     <ScrollView
         android:layout_width="match_parent"
@@ -188,4 +146,5 @@
             </LinearLayout>
         </LinearLayout>
     </ScrollView>
+
 </LinearLayout>
