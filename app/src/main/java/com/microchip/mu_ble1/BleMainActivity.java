@@ -121,7 +121,7 @@ public class BleMainActivity extends AppCompatActivity {
     private DatabaseReference databaseReference;
     private int d_num = 0, measure_n, interval_n;
     private String vds, gain, duty, stm, test;
-
+    private TextView vds_tv_, gain_tv_, duty_tv_, stm_tv_, test_tv_;
     private Timer timer = new Timer();
     private String[] arr_rcv, arr_rsp;
     private Thread thread;
@@ -152,6 +152,12 @@ public class BleMainActivity extends AppCompatActivity {
 
         connectTimeoutHandler = new Handler(Looper.getMainLooper());                                //Create a handler for a delayed runnable that will stop the connection attempt after a timeout
         textDeviceNameAndAddress = findViewById(R.id.deviceNameAndAddressText);                     //Get a reference to the TextView that will display the device name and address
+
+        vds_tv_ = findViewById(R.id.vds_tv2);
+        gain_tv_ = findViewById(R.id.gain_tv2);
+        duty_tv_ = findViewById(R.id.duty_tv2);
+        stm_tv_ = findViewById(R.id.stm_tv2);
+        test_tv_ = findViewById(R.id.test_tv2);
 
         // Graph View
         chart_iv  = findViewById(R.id.graph_iv);
@@ -846,5 +852,18 @@ public class BleMainActivity extends AppCompatActivity {
         stm  = mintent.getStringExtra("set_stm");
         test = mintent.getStringExtra("set_test");
 
+        String vds_, gain_, duty_, stm_, test_;
+
+        if(vds == "1"){vds_ = "30mV";}
+        else if(vds=="2"){vds_ = "60mV";}
+        else if(vds=="3"){vds_ = "120mV";}
+
+        if(gain=="4"){gain_ = "35kOhm";}
+
+        vds_tv_.setText("Vds : "+vds);
+        gain_tv_.setText("Gain : "+gain);
+        duty_tv_.setText("Duty Cycle : "+duty);
+        stm_tv_.setText("Stimulate : "+stm);
+        test_tv_.setText("");
     }
 }

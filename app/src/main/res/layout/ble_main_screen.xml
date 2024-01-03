@@ -77,16 +77,24 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="7dp"
-        android:text="Action : "
+        android:text="Duty Cycle : "
         android:textSize="15dp"
-        android:id="@+id/action_tv2"/>
+        android:id="@+id/duty_tv2"/>
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="7dp"
-        android:text="Duty Cycle : "
+        android:text="Stimulate : "
         android:textSize="15dp"
-        android:id="@+id/duty_tv2"/>
+        android:id="@+id/stm_tv2"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="7dp"
+        android:text="Test Gate Voltage : "
+        android:textSize="15dp"
+        android:id="@+id/test_tv2"/>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
