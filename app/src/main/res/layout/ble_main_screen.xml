@@ -48,15 +48,40 @@
             android:layout_marginLeft="10dp"
             android:id="@+id/set_btn"/>
         <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Apply"
+            android:layout_marginLeft="10dp"
+            android:id="@+id/apply_btn"/>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Transfer Curve"
+            android:textColor="@color/black"
+            android:layout_marginLeft="10dp"/>
+        <Button
             android:id="@+id/btg"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="g"/>
+            android:text="g"
+            android:layout_marginLeft="5dp"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="I-V Curve"
+            android:textColor="@color/black"
+            android:layout_marginLeft="15dp"/>
         <Button
             android:id="@+id/btt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="t"/>
+            android:text="t"
+            android:layout_marginLeft="5dp"/>
     </LinearLayout>
 
     <TextView

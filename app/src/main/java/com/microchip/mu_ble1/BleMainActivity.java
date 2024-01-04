@@ -94,6 +94,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -120,12 +121,13 @@ public class BleMainActivity extends AppCompatActivity {
     private LineChart chart_iv, chart_res;
     private DatabaseReference databaseReference;
     private int d_num = 0, measure_n, interval_n;
-    private String vds, gain, duty, stm, test;
+    private String vds="0", gain="0", duty="0", stm="0", test="0";
     private TextView vds_tv_, gain_tv_, duty_tv_, stm_tv_, test_tv_;
     private Timer timer = new Timer();
     private String[] arr_rcv, arr_rsp;
     private Thread thread;
-
+    private int vds_n = 0, gain_n = 0, duty_n = 0, stm_n = 0, test_n = 0;
+    private String set_intt = "0";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -138,16 +140,20 @@ public class BleMainActivity extends AppCompatActivity {
         progressBar.setIndeterminate(true);                                                         //Make the progress bar indeterminate (circular)
         progressBar.setVisibility(ProgressBar.INVISIBLE);                                           //Hide the circular progress bar
         showAlert = new ShowAlertDialogs(this);                                             //Create the object that will show alert dialogs
+
+
         stateConnection = StateConnection.DISCONNECTED;                                             //Initial stateConnection when app starts
         stateApp = StateApp.STARTING_SERVICE;                                                       //Are going to start the BleService service
+
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) { //Check whether we have location permission, required to scan
             stateApp = StateApp.REQUEST_PERMISSION;                                                 //Are requesting Location permission
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQ_CODE_ACCESS_LOC1); //Request fine location permission
         }
-        if (stateApp == StateApp.STARTING_SERVICE) {                                                //Only start BleService if we already have location permission
+        if (stateApp == StateApp.STARTING_SERVICE) {
             Intent bleServiceIntent = new Intent(this, BleService.class);             //Create Intent to start the BleService
             this.bindService(bleServiceIntent, bleServiceConnection, BIND_AUTO_CREATE);             //Create and bind the new service with bleServiceConnection object that handles service connect and disconnect
         }
+
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, MODE_PRIVATE);
 
         connectTimeoutHandler = new Handler(Looper.getMainLooper());                                //Create a handler for a delayed runnable that will stop the connection attempt after a timeout
@@ -175,6 +181,15 @@ public class BleMainActivity extends AppCompatActivity {
         chart_res.invalidate();
         LineData data2 = new LineData();
         chart_res.setData(data2);
+
+        Button bt_setting = findViewById(R.id.set_btn);
+
+        bt_setting.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                set_activity();
+            }
+        });
 
         Button btg_ = findViewById(R.id.btg);
         Button btt_ = findViewById(R.id.btt);
@@ -261,9 +276,8 @@ public class BleMainActivity extends AppCompatActivity {
                 mToast.show();
             }
         });
-
+        Button bt_apply = findViewById(R.id.apply_btn);
         Update_setting();
-
     }
     @Override
     public void onStart() {
@@ -273,6 +287,7 @@ public class BleMainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();                                                                           //Call superclass (AppCompatActivity) onResume method
         try {
+            Log.d("State1", String.valueOf(stateConnection));
             registerReceiver(bleServiceReceiver, bleServiceIntentFilter());                         //Register receiver to handles events fired by the BleService
             if (bleService != null && !bleService.isBluetoothRadioEnabled())                        //Check if Bluetooth radio was turned off while app was paused
                 if (stateApp == StateApp.RUNNING) {                                                 //Check that app is running, to make sure service is connected
@@ -281,6 +296,7 @@ public class BleMainActivity extends AppCompatActivity {
                     startActivityForResult(new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE), REQ_CODE_ENABLE_BT); //Start the activity to ask the user to grant permission to enable Bluetooth
                     Log.i(TAG, "Requesting user to enable Bluetooth radio");
                 }
+            Log.d("State2", String.valueOf(stateConnection));
             updateConnectionState();                                                                //Update the screen and menus
         } catch (Exception e) {
             Log.e(TAG, "11Oops, exception caught in " + e.getStackTrace()[0].getMethodName() + ": " + e.getMessage());
@@ -313,6 +329,7 @@ public class BleMainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();                                                                          //Call superclass (AppCompatActivity) onDestroy method
         if (stateApp != StateApp.REQUEST_PERMISSION) {                                              //See if we got past the permission request
+            Log.d("DEST", "?>?");
             unbindService(bleServiceConnection);                                                    //Unbind from the service handling Bluetooth
         }
     }
@@ -401,14 +418,16 @@ public class BleMainActivity extends AppCompatActivity {
     // ----------------------------------------------------------------------------------------------------------------
     // Callbacks for BleService service connection and disconnection
     private final ServiceConnection bleServiceConnection = new ServiceConnection() {                //Create new ServiceConnection interface to handle connection and disconnection
-
+        //@#@#
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder service) {              //Service connects
             try {
                 Log.i(TAG, "BleService connected");
                 BleService.LocalBinder binder = (BleService.LocalBinder) service;                   //Get the Binder for the Service
                 bleService = binder.getService();                                                   //Get a link to the Service from the Binder
-                if (bleService.isBluetoothRadioEnabled()) {                                         //See if the Bluetooth radio is on
+                // 여기다가 조건을 걸자
+                if (bleService.isBluetoothRadioEnabled() && set_intt == "0") {
+                    Log.d("set_intt", set_intt);
                     stateApp = StateApp.RUNNING;                                                    //Service is running and Bluetooth is enabled, app is now fully operational
                     startBleScanActivity();                                                         //Launch the BleScanActivity to scan for BLE devices
                 }
@@ -496,11 +515,6 @@ public class BleMainActivity extends AppCompatActivity {
             startActivity(intent);                                                                  //Start the settings activity
         }
     }
-
-    /******************************************************************************************************************
-     * Methods for handling Intents.
-     */
-
     // ----------------------------------------------------------------------------------------------------------------
     // Method to create and return an IntentFilter with Intent Actions that will be broadcast by the BleService to the bleServiceReceiver BroadcastReceiver
     private static IntentFilter bleServiceIntentFilter() {                                          //Method to create and return an IntentFilter
@@ -579,10 +593,6 @@ public class BleMainActivity extends AppCompatActivity {
         }
     };
 
-    /******************************************************************************************************************
-     * Method for processing incoming data and updating the display
-     */
-
     private void initializeDisplay() {
         try {
             Log.d("What!", "SOOO");
@@ -628,13 +638,6 @@ public class BleMainActivity extends AppCompatActivity {
             Log.e(TAG, "55Oops, exception caught in " + e.getStackTrace()[0].getMethodName() + ": " + e.getMessage());
         }
     }
-
-    /******************************************************************************************************************
-     * Methods for scanning, connecting, and showing event driven dialogs
-     */
-
-    // ----------------------------------------------------------------------------------------------------------------
-    // Start the BleScanActivity that scans for available Bluetooth devices and lets the user select one
     private void startBleScanActivity() {
         try {
             if (stateApp == StateApp.RUNNING) {                                                     //Only do a scan if we got through startup (permission granted, service started, Bluetooth enabled)
@@ -683,16 +686,11 @@ public class BleMainActivity extends AppCompatActivity {
         }
     };
 
-    /******************************************************************************************************************
-     * Methods for updating connection state on the screen
-     */
-
-    // ----------------------------------------------------------------------------------------------------------------
-    // Update the text showing what Bluetooth device is connected, connecting, discovering, disconnecting, or not connected
     private void updateConnectionState() {
         runOnUiThread(new Runnable() {                                                              //Always do display updates on UI thread
             @Override
             public void run() {
+                Log.d("STATE@@", String.valueOf(stateConnection));
                 switch (stateConnection) {
                     case CONNECTING: {
                         textDeviceNameAndAddress.setText(R.string.connecting);                             //Show "Connecting"
@@ -722,6 +720,7 @@ public class BleMainActivity extends AppCompatActivity {
                         break;
                     }
                     case DISCONNECTED:
+                        Log.d("@@", "TTAA");
                     default: {
                         stateConnection = StateConnection.DISCONNECTED;                             //Default, in case state is unknown
                         textDeviceNameAndAddress.setText(R.string.not_connected);                          //Show "Not Connected"
@@ -735,9 +734,7 @@ public class BleMainActivity extends AppCompatActivity {
     }
 
     private void addEntry() {
-        Log.d("!@#", String.valueOf(arr_rcv.length));
-
-        int[] cc = {Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW, Color.GRAY, Color.CYAN, Color.BLACK, Color.MAGENTA};
+        int[] cc = {Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW, Color.GRAY, Color.CYAN, Color.BLACK, Color.MAGENTA, Color.DKGRAY, Color.LTGRAY};
 
         LineData data_iv = chart_iv.getData();
         LineData data_rs = chart_res.getData();
@@ -771,13 +768,14 @@ public class BleMainActivity extends AppCompatActivity {
                 //iv start
                 LineDataSet lineDataSet_iv = new LineDataSet(val_iv, "iv"+(i+1));
                 lineDataSet_iv.setColor(cc[i]);
-                lineDataSet_iv.setCircleColor(cc[i]);
+                lineDataSet_iv.setDrawCircles(false);
                 data_iv.addDataSet(lineDataSet_iv);
 
                 chart_iv.notifyDataSetChanged();
                 chart_iv.setVisibleXRangeMaximum(300);
                 chart_iv.moveViewToX(data_iv.getEntryCount());
                 chart_iv.setData(data_iv);
+
                 chart_iv.invalidate();
 
                 // rs start
@@ -800,16 +798,10 @@ public class BleMainActivity extends AppCompatActivity {
         set.setFillAlpha(110);
         set.setFillColor(Color.parseColor("#d7e7fa"));
         set.setColor(Color.parseColor("#800080"));
-        set.setCircleColor(Color.parseColor("#800080"));
-        set.setCircleColor(Color.parseColor("#800080"));
         set.setValueTextColor(Color.WHITE);
         set.setDrawValues(false);
         set.setLineWidth(2);
-        set.setCircleRadius(6);
-        set.setDrawCircleHole(false);
-        set.setDrawCircles(false);
         set.setValueTextSize(9f);
-        //set.setDrawFilled(true);
 
         set.setAxisDependency(YAxis.AxisDependency.LEFT);
         set.setHighLightColor(Color.rgb(244, 117, 117));
@@ -845,25 +837,145 @@ public class BleMainActivity extends AppCompatActivity {
     }
 
     private void Update_setting(){
+        Log.d("up", "dating");
         Intent mintent = getIntent();
         vds  = mintent.getStringExtra("set_vds");
         gain = mintent.getStringExtra("set_gain");
         duty = mintent.getStringExtra("set_duty");
         stm  = mintent.getStringExtra("set_stm");
         test = mintent.getStringExtra("set_test");
+        String dd = mintent.getStringExtra("done");
 
-        String vds_, gain_, duty_, stm_, test_;
+        String vds_ = null, gain_ = null, duty_ = null, stm_ = null, test_ = null;
 
-        if(vds == "1"){vds_ = "30mV";}
-        else if(vds=="2"){vds_ = "60mV";}
-        else if(vds=="3"){vds_ = "120mV";}
+        if(Objects.equals(vds, "1")){
+            vds_ = "30mV";
+            vds_n = 1;
+        }
+        else if(Objects.equals(vds, "2")){
+            vds_ = "60mV";
+            vds_n = 1;
+        }
+        else if(Objects.equals(vds, "3")){
+            vds_ = "120mV";
+            vds_n = 1;
+        }
+        else{
+            Log.d("set vds", "nothing.."+vds);
+            vds_n = 0;
+        }
 
-        if(gain=="4"){gain_ = "35kOhm";}
+        if(Objects.equals(gain, "4")){
+            gain_ = "35kOhm";
+            gain_n = 1;
+        }
+        else if(Objects.equals(gain, "5")){
+            gain_="120kOhn";
+            gain_n = 1;
+        }
+        else if(Objects.equals(gain, "6")){
+            gain_="350kOhn";
+            gain_n = 1;
+        } else{
+            Log.d("set gain", "nothing.."+gain);
+            gain_n = 0;
+        }
 
-        vds_tv_.setText("Vds : "+vds);
-        gain_tv_.setText("Gain : "+gain);
-        duty_tv_.setText("Duty Cycle : "+duty);
-        stm_tv_.setText("Stimulate : "+stm);
-        test_tv_.setText("");
+        if(Objects.equals(duty, "q")){
+            duty_ = "5%";
+            duty_n = 1;
+        }
+        else if(Objects.equals(duty, "p")){
+            duty_ ="10%";
+            duty_n = 1;
+        } else{
+            Log.d("set duty", "nothing.."+duty);
+            duty_n = 0;
+        }
+
+        if(Objects.equals(stm, "r")){
+            stm_ = "Start";
+            stm_n = 1;
+        }
+        else if(Objects.equals(stm, "l")){
+            stm_="Stop";
+            stm_n = 1;
+        } else{
+            Log.d("set stm", "nothing.."+stm);
+            stm_n = 0;
+        }
+
+        if(Objects.equals(test, "d")){
+            test_ = "On";
+            test_n = 1;
+        }
+        else{
+            Log.d("set test", "nothing.."+test);
+            test_n = 0;
+        }
+
+        vds_tv_.setText("Vds : "+vds_);
+        gain_tv_.setText("Gain : "+gain_);
+        duty_tv_.setText("Duty Cycle : "+duty_);
+        stm_tv_.setText("Stimulate : "+stm_);
+        test_tv_.setText("Test Gate Voltage : "+test_);
+        if(dd == "1"){send_setting(vds, gain, duty, stm, test);}
+    }
+
+    private void send_setting(String vds, String gain, String duty, String stm, String test){
+        if(vds_n == 1){
+            bleService.writeToTransparentUART(vds.getBytes());
+            try{
+                Thread.sleep(1000);
+            } catch (InterruptedException e){
+                e.printStackTrace();
+            }
+        }
+        else{Log.d("set vds", "nothing..");}
+
+        if(gain_n == 1){
+            bleService.writeToTransparentUART(gain.getBytes());
+            try{
+                Thread.sleep(1000);
+            } catch (InterruptedException e){
+                e.printStackTrace();
+            }
+        }
+        else{Log.d("set gain", "nothing..");}
+
+        if(duty_n == 1){
+            bleService.writeToTransparentUART(duty.getBytes());
+            try{
+                Thread.sleep(1000);
+            } catch (InterruptedException e){
+                e.printStackTrace();
+            }
+        }
+        else{Log.d("set duty", "nothing..");}
+
+        if(stm_n == 1){
+            bleService.writeToTransparentUART(stm.getBytes());
+            try{
+                Thread.sleep(1000);
+            } catch (InterruptedException e){
+                e.printStackTrace();
+            }
+        }
+        else{Log.d("set stm", "nothing..");}
+
+        if(test_n == 1){
+            bleService.writeToTransparentUART(test.getBytes());
+            try{
+                Thread.sleep(1000);
+            } catch (InterruptedException e){
+                e.printStackTrace();
+            }
+        }
+        else{Log.d("set test", "nothing..");}
+    }
+
+    private void set_activity(){
+        Intent set_int = new Intent(this, SettingActivity.class);
+        startActivity(set_int);
     }
 }

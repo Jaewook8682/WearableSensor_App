@@ -4,16 +4,19 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
 public class SettingActivity extends AppCompatActivity {
-    private String vds = "1";
-    private String gain = "4";
-    private String duty = "q";
-    private String stm = "l";
-    private String test = "d";
+    private String vds = "0";
+    private String gain = "0";
+    private String duty = "0";
+    private String stm = "0";
+    private String test = "0";
+    private String done = "1";
+    private TextView vds_tv_, gain_tv_, duty_tv_, stm_tv_, test_tv_;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,11 +34,13 @@ public class SettingActivity extends AppCompatActivity {
         Button btl_ = findViewById(R.id.btl);
         Button btd_ = findViewById(R.id.btd);
 
-        TextView vds_tv_ = findViewById(R.id.vds_tv);
-        TextView gain_tv_ = findViewById(R.id.gain_tv);
-        TextView duty_tv_ = findViewById(R.id.duty_tv);
-        TextView stm_tv_ = findViewById(R.id.stm_tv);
-        TextView test_tv_ = findViewById(R.id.test_tv);
+        vds_tv_  = findViewById(R.id.vds_tv);
+        gain_tv_ = findViewById(R.id.gain_tv);
+        duty_tv_ = findViewById(R.id.duty_tv);
+        stm_tv_  = findViewById(R.id.stm_tv);
+        test_tv_ = findViewById(R.id.test_tv);
+
+        initialize_display();
 
         // @@@ button functions @@@
         bt1_.setOnClickListener(new View.OnClickListener() {
@@ -132,11 +137,25 @@ public class SettingActivity extends AppCompatActivity {
 
     private void msr_activity(){
         Intent bleIntent = new Intent(this, BleMainActivity.class);
+        Log.d("vds", vds);
+        Log.d("gain", gain);
+        Log.d("duty", duty);
+        Log.d("stm", stm);
+        Log.d("test", test);
         bleIntent.putExtra("set_vds", vds);
         bleIntent.putExtra("set_gain", gain);
         bleIntent.putExtra("set_duty", duty);
         bleIntent.putExtra("set_stm", stm);
         bleIntent.putExtra("set_test", test);
+        bleIntent.putExtra("done", done);
         startActivity(bleIntent);
+    }
+
+    private void initialize_display(){
+        vds_tv_.setText("Vds : ");
+        gain_tv_.setText("Gain : ");
+        duty_tv_.setText("Duty Cycle : ");
+        stm_tv_.setText("Stimulate : ");
+        test_tv_.setText("Test Gate Voltage : ");
     }
 }
