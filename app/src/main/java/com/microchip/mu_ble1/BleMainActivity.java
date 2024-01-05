@@ -131,7 +131,6 @@ public class BleMainActivity extends AppCompatActivity {
     private int vds_n = 0, gain_n = 0, duty_n = 0, stm_n = 0, test_n = 0;
     private String set_intt = "0";
 
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);                                                         //Call superclass (AppCompatActivity) onCreate method
@@ -152,12 +151,19 @@ public class BleMainActivity extends AppCompatActivity {
             stateConnection = StateConnection.DISCONNECTED;                                             //Initial stateConnection when app starts
             stateApp = StateApp.STARTING_SERVICE;                                                       //Are going to start the BleService service
         } else if (SettingActivity.set_main == 1) {
-            Log.d("ERR", "dd 1");
+            if(bleDeviceName != null){
+                Log.d("$$$$$$", bleDeviceName);
+            } else{
+                Log.d("@@@@@@", "...??");
+            }
+
+            Log.d("ERR2", "dd 1");
             stateConnection = StateConnection.CONNECTED;
             stateApp = StateApp.RUNNING;
         } else{
-            Log.d("ERR", "dd err");
+            Log.d("ERR3", "dd err");
         }
+
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) { //Check whether we have location permission, required to scan
             stateApp = StateApp.REQUEST_PERMISSION;                                                 //Are requesting Location permission
@@ -304,26 +310,24 @@ public class BleMainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();                                                                           //Call superclass (AppCompatActivity) onResume method
         try {
-                Log.d("State1", String.valueOf(stateConnection));
-                registerReceiver(bleServiceReceiver, bleServiceIntentFilter());                         //Register receiver to handles events fired by the BleService
-                Log.d("dd0", "00");
-                if (bleService != null && !bleService.isBluetoothRadioEnabled())                        //Check if Bluetooth radio was turned off while app was paused
-                    Log.d("dd1", "11");
+                if(SettingActivity.set_main == 0){
+                    Log.d("State1", String.valueOf(stateConnection));
+                    registerReceiver(bleServiceReceiver, bleServiceIntentFilter());                         //Register receiver to handles events fired by the BleService
+                    Log.d("dd0", "00");
+                    if (bleService != null && !bleService.isBluetoothRadioEnabled())                        //Check if Bluetooth radio was turned off while app was paused
+                        Log.d("dd1", "11");
                     if (stateApp == StateApp.RUNNING) {                                                 //Check that app is running, to make sure service is connected
                         stateApp = StateApp.ENABLING_BLUETOOTH;                                         //Are going to request user to turn on Bluetooth
                         Log.d("dd2", "22");
-                        if(SettingActivity.set_main == 0){
-                            Log.d("dd3", "33");
-                            stateConnection = StateConnection.DISCONNECTED;                                 //Must be disconnected if Bluetooth is off
-                            startActivityForResult(new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE), REQ_CODE_ENABLE_BT); //Start the activity to ask the user to grant permission to enable Bluetooth
-                            Log.i(TAG, "Requesting user to enable Bluetooth radio");
-                        }
-
+                        Log.d("dd3", "33");
+                        stateConnection = StateConnection.DISCONNECTED;                                 //Must be disconnected if Bluetooth is off
+                        startActivityForResult(new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE), REQ_CODE_ENABLE_BT); //Start the activity to ask the user to grant permission to enable Bluetooth
+                        Log.i(TAG, "Requesting user to enable Bluetooth radio");
                     }
-                Log.d("State2", String.valueOf(stateConnection));
+                }else{
+                    Log.d("State2", String.valueOf(stateConnection));
+                }
                 updateConnectionState();                                                                //Update the screen and menus
-
-
         } catch (Exception e) {
             Log.e(TAG, "11Oops, exception caught in " + e.getStackTrace()[0].getMethodName() + ": " + e.getMessage());
         }
@@ -733,12 +737,17 @@ public class BleMainActivity extends AppCompatActivity {
                     }
                     case CONNECTED: {
                         if (bleDeviceName != null) {                                                //See if there is a device name
+                            Log.d("!$", "^%");
                             textDeviceNameAndAddress.setText(bleDeviceName);                        //Display the name
                         } else {
+                            Log.d("!$", "^%22");
                             textDeviceNameAndAddress.setText(R.string.unknown_device);                     //or display "Unknown Device"
                         }
                         if (bleDeviceAddress != null) {                                             //See if there is an address
+                            Log.d("!$", "^%33");
                             textDeviceNameAndAddress.append(" - " + bleDeviceAddress);              //Display the address
+                        } else{
+                            Log.d("!$", "^%44");
                         }
                         progressBar.setVisibility(ProgressBar.INVISIBLE);                           //Hide the circular progress bar
                         break;
@@ -873,7 +882,8 @@ public class BleMainActivity extends AppCompatActivity {
         duty = mintent.getStringExtra("set_duty");
         stm  = mintent.getStringExtra("set_stm");
         test = mintent.getStringExtra("set_test");
-        String dd = mintent.getStringExtra("done");
+
+
 
         String vds_ = null, gain_ = null, duty_ = null, stm_ = null, test_ = null;
 
@@ -948,12 +958,14 @@ public class BleMainActivity extends AppCompatActivity {
         duty_tv_.setText("Duty Cycle : "+duty_);
         stm_tv_.setText("Stimulate : "+stm_);
         test_tv_.setText("Test Gate Voltage : "+test_);
-        if(dd == "1"){send_setting(vds, gain, duty, stm, test);}
+        if(SettingActivity.set_main == 1){send_setting();}
     }
 
-    private void send_setting(String vds, String gain, String duty, String stm, String test){
+    private void send_setting(){
         if(vds_n == 1){
+            Log.d("vds",vds);
             bleService.writeToTransparentUART(vds.getBytes());
+            Log.d("vds",vds);
             try{
                 Thread.sleep(1000);
             } catch (InterruptedException e){
@@ -963,7 +975,10 @@ public class BleMainActivity extends AppCompatActivity {
         else{Log.d("set vds", "nothing..");}
 
         if(gain_n == 1){
+            Log.d("gain",gain);
             bleService.writeToTransparentUART(gain.getBytes());
+            Log.d("gain",gain);
+
             try{
                 Thread.sleep(1000);
             } catch (InterruptedException e){
@@ -973,6 +988,7 @@ public class BleMainActivity extends AppCompatActivity {
         else{Log.d("set gain", "nothing..");}
 
         if(duty_n == 1){
+            Log.d("@#",duty);
             bleService.writeToTransparentUART(duty.getBytes());
             try{
                 Thread.sleep(1000);
@@ -983,6 +999,7 @@ public class BleMainActivity extends AppCompatActivity {
         else{Log.d("set duty", "nothing..");}
 
         if(stm_n == 1){
+            Log.d("@#",stm);
             bleService.writeToTransparentUART(stm.getBytes());
             try{
                 Thread.sleep(1000);
@@ -993,7 +1010,9 @@ public class BleMainActivity extends AppCompatActivity {
         else{Log.d("set stm", "nothing..");}
 
         if(test_n == 1){
+            Log.d("@#",test);
             bleService.writeToTransparentUART(test.getBytes());
+            Log.d("AAAA", bleDeviceName);
             try{
                 Thread.sleep(1000);
             } catch (InterruptedException e){
@@ -1003,7 +1022,6 @@ public class BleMainActivity extends AppCompatActivity {
         else{
             Log.d("set test", "nothing..");
         }
-
     }
 
     private void set_activity(){
