@@ -15,8 +15,8 @@ public class SettingActivity extends AppCompatActivity {
     private String duty = "0";
     private String stm = "0";
     private String test = "0";
-    private String done = "1";
     private TextView vds_tv_, gain_tv_, duty_tv_, stm_tv_, test_tv_;
+    static int set_main = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -147,7 +147,7 @@ public class SettingActivity extends AppCompatActivity {
         bleIntent.putExtra("set_duty", duty);
         bleIntent.putExtra("set_stm", stm);
         bleIntent.putExtra("set_test", test);
-        bleIntent.putExtra("done", done);
+        set_main = 1;
         startActivity(bleIntent);
     }
 
