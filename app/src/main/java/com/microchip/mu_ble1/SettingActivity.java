@@ -1,8 +1,21 @@
 package com.microchip.mu_ble1;
 
+import static com.microchip.mu_ble1.BleMainActivity.bleService;
+import static com.microchip.mu_ble1.MeasureActivity.duty;
+import static com.microchip.mu_ble1.MeasureActivity.duty_tv_2;
+import static com.microchip.mu_ble1.MeasureActivity.gain;
+import static com.microchip.mu_ble1.MeasureActivity.gain_tv_2;
+import static com.microchip.mu_ble1.MeasureActivity.stm;
+import static com.microchip.mu_ble1.MeasureActivity.stm_tv_2;
+import static com.microchip.mu_ble1.MeasureActivity.test;
+import static com.microchip.mu_ble1.MeasureActivity.test_tv_2;
+import static com.microchip.mu_ble1.MeasureActivity.vds;
+import static com.microchip.mu_ble1.MeasureActivity.vds_tv_2;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.icu.util.Measure;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -10,13 +23,9 @@ import android.widget.Button;
 import android.widget.TextView;
 
 public class SettingActivity extends AppCompatActivity {
-    private String vds = "0";
-    private String gain = "0";
-    private String duty = "0";
-    private String stm = "0";
-    private String test = "0";
     private TextView vds_tv_, gain_tv_, duty_tv_, stm_tv_, test_tv_;
     static int set_main = 0;
+    public static String set_xx = "0";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,7 +48,7 @@ public class SettingActivity extends AppCompatActivity {
         duty_tv_ = findViewById(R.id.duty_tv);
         stm_tv_  = findViewById(R.id.stm_tv);
         test_tv_ = findViewById(R.id.test_tv);
-
+        set_xx = "1";
         initialize_display();
 
         // @@@ button functions @@@
@@ -48,6 +57,7 @@ public class SettingActivity extends AppCompatActivity {
             public void onClick(View view) {
                 vds = "1";
                 vds_tv_.setText("Vds : 30mV");
+                bleService.writeToTransparentUART(vds.getBytes());
             }
         });
 
@@ -56,6 +66,7 @@ public class SettingActivity extends AppCompatActivity {
             public void onClick(View view) {
                 vds = "2";
                 vds_tv_.setText("Vds : 60mV");
+                bleService.writeToTransparentUART(vds.getBytes());
             }
         });
 
@@ -64,6 +75,7 @@ public class SettingActivity extends AppCompatActivity {
             public void onClick(View view) {
                 vds = "3";
                 vds_tv_.setText("Vds : 120mV");
+                bleService.writeToTransparentUART(vds.getBytes());
             }
         });
 
@@ -72,6 +84,7 @@ public class SettingActivity extends AppCompatActivity {
             public void onClick(View view) {
                 gain = "4";
                 gain_tv_.setText("Gain : 35kOhm");
+                bleService.writeToTransparentUART(gain.getBytes());
             }
         });
 
@@ -80,6 +93,7 @@ public class SettingActivity extends AppCompatActivity {
             public void onClick(View view) {
                 gain = "5";
                 gain_tv_.setText("Gain : 120kOhm");
+                bleService.writeToTransparentUART(gain.getBytes());
             }
         });
 
@@ -88,20 +102,23 @@ public class SettingActivity extends AppCompatActivity {
             public void onClick(View view) {
                 gain = "6";
                 gain_tv_.setText("Gain : 350kOhm");
+                bleService.writeToTransparentUART(gain.getBytes());
             }
         });
         btp_.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 duty = "p";
-                duty_tv_.setText("Duty Cycle : 5%");
+                duty_tv_.setText("Duty Cycle : 10%");
+                bleService.writeToTransparentUART(duty.getBytes());
             }
         });
         btq_.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 duty = "q";
-                duty_tv_.setText("Duty Cycle : 10%");
+                duty_tv_.setText("Duty Cycle : 5%");
+                bleService.writeToTransparentUART(duty.getBytes());
             }
         });
         btr_.setOnClickListener(new View.OnClickListener() {
@@ -109,6 +126,7 @@ public class SettingActivity extends AppCompatActivity {
             public void onClick(View view) {
                 stm = "r";
                 stm_tv_.setText("Stimulate : Start");
+                bleService.writeToTransparentUART(stm.getBytes());
             }
         });
         btl_.setOnClickListener(new View.OnClickListener() {
@@ -116,6 +134,7 @@ public class SettingActivity extends AppCompatActivity {
             public void onClick(View view) {
                 stm = "l";
                 stm_tv_.setText("Stimulate : Stop");
+                bleService.writeToTransparentUART(stm.getBytes());
             }
         });
         btd_.setOnClickListener(new View.OnClickListener() {
@@ -123,6 +142,7 @@ public class SettingActivity extends AppCompatActivity {
             public void onClick(View view) {
                 test = "d";
                 test_tv_.setText("Test Gate Voltage : On");
+                bleService.writeToTransparentUART(test.getBytes());
             }
         });
 
@@ -133,10 +153,18 @@ public class SettingActivity extends AppCompatActivity {
                 msr_activity();
             }
         });
-    }
 
+        Button bt_preset = findViewById(R.id.btpreset);
+        bt_preset.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String sendData = "s";
+                bleService.writeToTransparentUART(sendData.getBytes());
+            }
+        });
+    }
     private void msr_activity(){
-        Intent bleIntent = new Intent(this, BleMainActivity.class);
+        Intent bleIntent = new Intent(this, MeasureActivity.class);
         Log.d("vds", vds);
         Log.d("gain", gain);
         Log.d("duty", duty);
