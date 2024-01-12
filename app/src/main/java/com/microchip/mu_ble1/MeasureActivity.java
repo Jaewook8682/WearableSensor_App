@@ -7,9 +7,14 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,6 +33,10 @@ import com.google.android.gms.common.util.Hex;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
@@ -172,9 +181,13 @@ public class MeasureActivity extends AppCompatActivity {
         bt_save_.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                writeFile(String.valueOf(et_save_.getText()));
+                try {
+                    writeFile(String.valueOf(et_save_.getText()));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                Toast mToast = Toast.makeText(getApplicationContext(), "Successfully saved "+et_save_.getText(), Toast.LENGTH_SHORT);
                 et_save_.setText(null);
-                Toast mToast = Toast.makeText(getApplicationContext(), "Successfully saved", Toast.LENGTH_SHORT);
                 mToast.show();
             }
         });
@@ -197,7 +210,8 @@ public class MeasureActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void writeFile(String fileTitle) {
+    // data upload on the firebase server
+    public void writeFile_server(String fileTitle) {
         for(int i =0; i<measure_n;i++){
             String[] d1 = Arrays.copyOfRange(arr_rcv, i*300, (i+1)*300);
             String d0 = Arrays.toString(d1);
@@ -207,6 +221,36 @@ public class MeasureActivity extends AppCompatActivity {
         String d2 = Arrays.toString(arr_rsp);
         databaseReference.child(fileTitle).child("Lowest points").setValue(d2);
     }
+
+    public void writeFile(String fileTitle) throws IOException {
+        FileOutputStream fos;
+        ContentResolver resolver = getContentResolver();
+        ContentValues values = new ContentValues();
+
+        values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileTitle+".txt");
+        values.put(MediaStore.MediaColumns.MIME_TYPE, "application/*");
+
+        values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOCUMENTS+ File.separator+"Database/");
+        Uri fileUri = resolver.insert(MediaStore.Files.getContentUri("external"), values);
+        try{
+            fos = (FileOutputStream) resolver.openOutputStream(fileUri);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        try{
+            int ll = arr_rcv.length + arr_rsp.length;
+            String[] saving_arr = new String[ll];
+            System.arraycopy(arr_rcv, 0, saving_arr, 0, arr_rcv.length);
+            System.arraycopy(arr_rsp, 0, saving_arr, arr_rcv.length, arr_rsp.length);
+            fos.write(Arrays.toString(saving_arr).getBytes());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        fos.close();
+        fos.flush();
+        fos.close();
+    }
+
     public static void processIncomingData(byte[] newBytes) {
         try {
             int d_len = Hex.bytesToStringUppercase(newBytes).length();
