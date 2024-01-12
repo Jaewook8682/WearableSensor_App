@@ -186,7 +186,7 @@ public class MeasureActivity extends AppCompatActivity {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-                Toast mToast = Toast.makeText(getApplicationContext(), "Successfully saved "+et_save_.getText(), Toast.LENGTH_SHORT);
+                Toast mToast = Toast.makeText(getApplicationContext(), "Successfully saved '"+et_save_.getText()+"'", Toast.LENGTH_SHORT);
                 et_save_.setText(null);
                 mToast.show();
             }
