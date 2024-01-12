@@ -290,8 +290,6 @@ public class BleService extends Service {
                     Log.d(TAG, "New notification or indication");
                     transparentReceiveOutput.write(characteristic.getValue());                      //Get the bytes from the characteristic and put them in the ByteArrayOutputStream for later
                     sendBroadcast(new Intent(ACTION_BLE_NEW_DATA_RECEIVED));                        //Broadcast Intent to announce the new data. This does not send the data, it needs to be read by calling readFromTransparentUART() below
-                    // 여기다가 process 처리하자
-                    Log.d("what is ", Arrays.toString(characteristic.getValue()));
                     MeasureActivity.get_data();
                 }else{
                     Log.d(TAG, "what@#@!");

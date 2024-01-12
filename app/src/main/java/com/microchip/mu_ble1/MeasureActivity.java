@@ -378,12 +378,10 @@ public class MeasureActivity extends AppCompatActivity {
             if(Objects.equals(ss, "r")){stm_tv_2.setText("Stimulate : Start");} else if (Objects.equals(ss, "l")) {stm_tv_2.setText("Stimulate : Stop");}
             if(Objects.equals(tt, "d")){test_tv_2.setText("Test the gate Voltage : On");}
         }
-
     }
 
     public static void get_data(){
         final byte[] newBytes = bleService.readFromTransparentUART();
-        Log.d("What is 22", Arrays.toString(newBytes));
         processIncomingData(newBytes);
     }
 }
