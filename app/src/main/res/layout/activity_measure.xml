@@ -28,15 +28,22 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Current Setting"
-            android:textSize="20dp" />
+            android:text="@string/connected"
+            android:id="@+id/ble_status"
+            android:textSize="15dp" />
 
         <Button
             android:id="@+id/set_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="30dp"
+            android:layout_marginLeft="70dp"
             android:text="Setting" />
+
+        <Button
+            android:id="@+id/disconn_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="disconn" />
     </LinearLayout>
 
     <TextView

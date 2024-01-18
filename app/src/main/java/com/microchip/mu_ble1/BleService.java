@@ -17,6 +17,10 @@
 
 package com.microchip.mu_ble1;
 
+import static com.microchip.mu_ble1.BleMainActivity.bleGlobalAddress;
+import static com.microchip.mu_ble1.MeasureActivity.G_BLE_Connection;
+import static com.microchip.mu_ble1.MeasureActivity.tv_ble;
+
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -30,10 +34,14 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.icu.util.Measure;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
+import android.os.Looper;
 import android.util.Log;
+import android.widget.Toast;
+
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -164,6 +172,7 @@ public class BleService extends Service {
                     switch (newState) {
                         case BluetoothProfile.STATE_CONNECTED: {                                    //Are now connected
                             Log.i(TAG, "Connected to BLE device");
+                            G_BLE_Connection = "1";
                             transparentReceiveOutput.reset();                                       //Reset (empty) the ByteArrayOutputStream of any data left over from a previous connection
                             sendBroadcast(new Intent(ACTION_BLE_CONNECTED));                        //Let the BleMainActivity know that we are connected by broadcasting an Intent
                             descriptorWriteQueue.clear();                                           //Clear write queues in case there was something left in the queue from the previous connection
@@ -173,6 +182,7 @@ public class BleService extends Service {
                         }
                         case BluetoothProfile.STATE_DISCONNECTED: {                                 //Are now disconnected
                             Log.i(TAG, "Disconnected from BLE device");
+                            MeasureActivity.GConnAddress(bleGlobalAddress);
                             sendBroadcast(new Intent(ACTION_BLE_DISCONNECTED));                     //Let the BleMainActivity know that we are disconnected by broadcasting an Intent
                         }
                     }
@@ -407,6 +417,7 @@ public class BleService extends Service {
             }
         }
         catch (Exception e) {
+            Log.d("DISCONN", "ERR occured");
             Log.e(TAG, "Oops, exception caught in " + e.getStackTrace()[0].getMethodName() + ": " + e.getMessage());
         }
     }

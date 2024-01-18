@@ -51,6 +51,8 @@ public class MeasureActivity extends AppCompatActivity {
     public static String[] arr_rcv, arr_rsp;
     private int vds_n = 0, gain_n = 0, duty_n = 0, stm_n = 0, test_n = 0;
     public static String vds="0", gain="0", duty="0", stm="0", test="0";
+    public static String G_BLE_Connection = "0";
+    static TextView tv_ble;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,6 +83,8 @@ public class MeasureActivity extends AppCompatActivity {
         chart_res.invalidate();
         LineData data2 = new LineData();
         chart_res.setData(data2);
+
+        tv_ble = findViewById(R.id.ble_status);
 
         Button bt_setting = findViewById(R.id.set_btn);
         bt_setting.setOnClickListener(new View.OnClickListener() {
@@ -190,6 +194,14 @@ public class MeasureActivity extends AppCompatActivity {
             }
         });
         update_setting();
+        Button disconn_ = findViewById(R.id.disconn_btn);
+        disconn_.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                bleService.disconnectBle();
+                Log.d("BLE", "DISCONNECTED!!..");
+            }
+        });
     }
 
     @Override
@@ -381,5 +393,20 @@ public class MeasureActivity extends AppCompatActivity {
     public static void get_data(){
         final byte[] newBytes = bleService.readFromTransparentUART();
         processIncomingData(newBytes);
+    }
+
+    public static void GConnAddress(String address) {
+        Log.d("BLE CONN", "Reconnecting...");
+        G_BLE_Connection = "0";
+        while(G_BLE_Connection.equals("0")){
+            bleService.connectBle(address);
+            Log.d("@@", G_BLE_Connection);
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        Log.d("##", G_BLE_Connection);
     }
 }

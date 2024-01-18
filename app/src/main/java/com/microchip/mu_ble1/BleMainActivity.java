@@ -123,6 +123,8 @@ public class BleMainActivity extends AppCompatActivity {
     private StateApp stateApp;                                                                      //State of the app
     private Thread thread;
 
+    public static String bleGlobalAddress;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -356,6 +358,8 @@ public class BleMainActivity extends AppCompatActivity {
                 if (resultCode == Activity.RESULT_OK) {                                             //User chose a Bluetooth device to connect
                     stateApp = StateApp.RUNNING;                                                    //Service is running and Bluetooth is enabled, app is fully operational
                     bleDeviceAddress = intent.getStringExtra(BleScanActivity.EXTRA_SCAN_ADDRESS);   //Get the address of the BLE device selected in the BleScanActivity
+                    bleGlobalAddress = bleDeviceAddress.toString();
+                    Log.d("G address", bleGlobalAddress);
                     bleDeviceName = intent.getStringExtra(BleScanActivity.EXTRA_SCAN_NAME);         //Get the name of the BLE device selected in the BleScanActivity
                     if (bleDeviceAddress == null) {                                                 //Check whether we were given a device address
                         stateConnection = StateConnection.DISCONNECTED;                             //No device address so not connected and not going to connect
