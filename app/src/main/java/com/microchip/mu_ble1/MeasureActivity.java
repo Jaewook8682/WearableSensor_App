@@ -1,6 +1,7 @@
 package com.microchip.mu_ble1;
 
 import static android.content.ContentValues.TAG;
+import static com.microchip.mu_ble1.BleMainActivity.bleGlobalAddress;
 import static com.microchip.mu_ble1.BleMainActivity.bleService;
 
 import androidx.annotation.NonNull;
@@ -195,12 +196,12 @@ public class MeasureActivity extends AppCompatActivity {
             }
         });
         update_setting();
-        Button disconn_ = findViewById(R.id.disconn_btn);
-        disconn_.setOnClickListener(new View.OnClickListener() {
+        Button reconn_ = findViewById(R.id.btn_reconn);
+        reconn_.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                bleService.disconnectBle();
-                Log.d("BLE", "DISCONNECTED!!..");
+                GConnAddress(bleGlobalAddress);
+                Log.d("BLE", "trying reconnect...!");
             }
         });
     }
@@ -411,6 +412,6 @@ public class MeasureActivity extends AppCompatActivity {
             }
         }
         Log.d("##", G_BLE_Connection);
-        tv_ble.setText("connected..");
+        tv_ble.setText("connected");
     }
 }

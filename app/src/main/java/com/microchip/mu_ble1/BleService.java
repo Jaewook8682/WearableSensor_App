@@ -19,7 +19,6 @@ package com.microchip.mu_ble1;
 
 import static com.microchip.mu_ble1.BleMainActivity.bleGlobalAddress;
 import static com.microchip.mu_ble1.MeasureActivity.G_BLE_Connection;
-import static com.microchip.mu_ble1.MeasureActivity.tv_ble;
 
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
