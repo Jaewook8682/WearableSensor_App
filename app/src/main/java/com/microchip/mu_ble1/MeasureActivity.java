@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
@@ -395,6 +396,7 @@ public class MeasureActivity extends AppCompatActivity {
         processIncomingData(newBytes);
     }
 
+    @SuppressLint("SetTextI18n")
     public static void GConnAddress(String address) {
         Log.d("BLE CONN", "Reconnecting...");
         G_BLE_Connection = "0";
@@ -402,11 +404,13 @@ public class MeasureActivity extends AppCompatActivity {
             bleService.connectBle(address);
             Log.d("@@", G_BLE_Connection);
             try {
+                tv_ble.setText("reconnect..");
                 Thread.sleep(3000);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
         }
         Log.d("##", G_BLE_Connection);
+        tv_ble.setText("connected..");
     }
 }
