@@ -121,23 +121,23 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Measurement"/>
-        <EditText
-            android:layout_width="100dp"
-            android:layout_height="wrap_content"
-            android:id="@+id/n_measure"/>
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="30dp"
             android:text="Start"
             android:id="@+id/start" />
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="Stop"
+            android:layout_marginLeft="15dp"
+            android:id="@+id/stop" />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="clear"
+            android:layout_marginLeft="15dp"
             android:id="@+id/clear"/>
     </LinearLayout>
     <ScrollView

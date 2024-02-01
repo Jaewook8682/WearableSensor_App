@@ -51,10 +51,11 @@ public class MeasureActivity extends AppCompatActivity {
     public static TextView vds_tv_2, gain_tv_2, duty_tv_2, stm_tv_2, test_tv_2;
     public static int interval_n, d_num = 0, measure_n;
     public static String[] arr_rcv, arr_rsp;
-    private int vds_n = 0, gain_n = 0, duty_n = 0, stm_n = 0, test_n = 0;
     public static String vds="0", gain="0", duty="0", stm="0", test="0";
     public static String G_BLE_Connection = "0";
     static TextView tv_ble;
+    private int stop_n = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -134,8 +135,6 @@ public class MeasureActivity extends AppCompatActivity {
             }
         });
         // @@@ button functions @@@
-
-        EditText n_measure_ = findViewById(R.id.n_measure);
         Button bt_start = findViewById(R.id.start);
         bt_start.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -150,14 +149,12 @@ public class MeasureActivity extends AppCompatActivity {
                 chart_res.setData(data2);
 
                 d_num = 0;
-                measure_n = Integer.valueOf(String.valueOf(n_measure_.getText()));
-                arr_rcv = new String[measure_n * 300];
-                arr_rsp = new String[measure_n];
+                arr_rcv = new String[2];
+                arr_rsp = new String[1];
                 String sendData = "g";
-                for (int i = 0; i < measure_n; i++) {
-                    Log.d("REQ" + interval_n, "req");
+                while(stop_n == 0){
                     try {
-                        Thread.sleep(1000);
+                        Thread.sleep(100);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
@@ -165,6 +162,15 @@ public class MeasureActivity extends AppCompatActivity {
                 }
             }
         });
+
+        Button bt_stop = findViewById(R.id.stop);
+        bt_stop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
 
         Button clear_ = findViewById(R.id.clear);
         clear_.setOnClickListener(new View.OnClickListener() {
@@ -269,26 +275,23 @@ public class MeasureActivity extends AppCompatActivity {
             Log.d("Requesting..", "("+String.valueOf(interval_n+1)+"/"+ String.valueOf(measure_n)+")");
             Log.d("Received Length", String.valueOf(d_len));
 
-            if(d_len > 0){
-                int d_conv = d_len / 400;    // data block 개수
-                for(int i =0; i < 100*d_conv; i++){
-                    String d11 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i * 4 + 2));
-                    String d12 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i * 4 + 3));
-                    String d13 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i * 4 + 0));
-                    String d14 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(i * 4 + 1));
-                    arr_rcv[i+d_num*100] = String.valueOf(Integer.valueOf(d11 + d12 + d13 + d14, 16));
-                }
-                d_num += d_conv;            // global data index(3block마다 1 데이터)
-                Log.d("D num", String.valueOf(d_num));
-                Log.d("d conv", String.valueOf(d_conv));
-                if((d_num/3) == measure_n){
-                    addEntry();
-                    d_num = 0;
-                }
-            }
-            if(d_num%3==0){
-                Log.d("Received", "1 Data Block");
-                interval_n = d_num/3;
+            if(d_len > 0) {
+                String d11 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(2));
+                String d12 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(3));
+                String d13 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(0));
+                String d14 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(1));
+                Log.d("what data?", String.valueOf(Integer.valueOf(d11 + d12 + d13 + d14, 16)));
+
+                String d21 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(6));
+                String d22 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(7));
+                String d23 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(4));
+                String d24 = String.valueOf(Hex.bytesToStringUppercase(newBytes).charAt(5));
+                Log.d("what data?", String.valueOf(Integer.valueOf(d21 + d22 + d23 + d24, 16)));
+
+                arr_rcv[d_num]   = String.valueOf(Integer.valueOf(d11 + d12 + d13 + d14, 16));
+                arr_rcv[d_num+1] = String.valueOf(Integer.valueOf(d21 + d22 + d23 + d24, 16));
+                d_num+2
+                addEntry();
             }
         } catch (Exception e) {
             Log.e(TAG, "55Oops, exception caught in " + e.getStackTrace()[0].getMethodName() + ": " + e.getMessage());
@@ -313,6 +316,12 @@ public class MeasureActivity extends AppCompatActivity {
                 set_rs = createSet();
                 data_rs.addDataSet(set_rs);
             }
+
+            ArrayList<Entry> val_iv  = new ArrayList<>();
+            ArrayList<Entry> val_rs  = new ArrayList<>();
+
+
+
             for(int i = 0; i < measure_n; i++){
                 ArrayList<Entry> val_iv  = new ArrayList<>();
                 ArrayList<Entry> val_rs  = new ArrayList<>();
