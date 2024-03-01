@@ -51,21 +51,23 @@ public class MeasureActivity extends AppCompatActivity {
     private FirebaseDatabase database;
     private static LineChart chart_iv;
     public static TextView vds_tv_2, gain_tv_2, duty_tv_2, stm_tv_2, test_tv_2;
-    public static int interval_n, d_num = 0, min_d = 0, measure_n;
+    public static int save_n, d_num = 0, saving_point = 0, measure_n;
     public static String[] arr_rcv;
     public static String vds="0", gain="0", duty="0", stm="0", test="0";
     public static String G_BLE_Connection = "0";
     static TextView tv_ble;
     static EditText et_r_time;
     public static ArrayList<Entry> val_iv  = new ArrayList<>();
-    static long t1, t2, t3, t4, t5, t6;
+    static long t1, t2, t3, t4, t5, t6, start_time, end_time, temp_time;
     static float loop_time;
+    static File_saver fileSaver;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_measure);
 
-        Thread thread = new continuous_req();
+        Thread thread = new Infinite_request();
+        fileSaver = new File_saver(getApplicationContext());
 
         database = FirebaseDatabase.getInstance();
         databaseReference = database.getReference("User");
@@ -138,6 +140,7 @@ public class MeasureActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 //@@
+                Log.d("start", "Start Measuring!");
                 thread.start();
             }
         });
@@ -164,6 +167,7 @@ public class MeasureActivity extends AppCompatActivity {
 
         EditText et_save_ = findViewById(R.id.et_save);
         Button bt_save_   = findViewById(R.id.bt_save);
+        /*
         bt_save_.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -177,6 +181,8 @@ public class MeasureActivity extends AppCompatActivity {
                 mToast.show();
             }
         });
+
+         */
         update_setting();
         Button reconn_ = findViewById(R.id.btn_reconn);
         reconn_.setOnClickListener(new View.OnClickListener() {
@@ -205,41 +211,7 @@ public class MeasureActivity extends AppCompatActivity {
     }
 
     // data upload on the firebase server
-    public void writeFile_server(String fileTitle) {
-        for(int i =0; i<measure_n;i++){
-            String[] d1 = Arrays.copyOfRange(arr_rcv, i*300, (i+1)*300);
-            String d0 = Arrays.toString(d1);
-            databaseReference.child(fileTitle).child("iv"+(i+1)).setValue(d0);
-        }
-    }
 
-    public void writeFile(String fileTitle) throws IOException {
-        FileOutputStream fos;
-        ContentResolver resolver = getContentResolver();
-        ContentValues values = new ContentValues();
-
-        values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileTitle+".txt");
-        values.put(MediaStore.MediaColumns.MIME_TYPE, "application/*");
-
-        values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOCUMENTS+ File.separator+"Database/");
-        Uri fileUri = resolver.insert(MediaStore.Files.getContentUri("external"), values);
-        try{
-            fos = (FileOutputStream) resolver.openOutputStream(fileUri);
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-        try{
-            int ll = arr_rcv.length;
-            String[] saving_arr = new String[ll];
-            System.arraycopy(arr_rcv, 0, saving_arr, 0, arr_rcv.length);
-            fos.write(Arrays.toString(saving_arr).getBytes());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        fos.close();
-        fos.flush();
-        fos.close();
-    }
 
     public static void processIncomingData(byte[] newBytes) {
             int d_len = Hex.bytesToStringUppercase(newBytes).length();
@@ -291,6 +263,19 @@ public class MeasureActivity extends AppCompatActivity {
             chart_iv.setVisibleXRangeMaximum(10);
             chart_iv.moveViewToX(data_iv.getEntryCount());
 
+            // save data
+            temp_time = System.nanoTime();
+            float current_interval = (float) ((temp_time - start_time) / Math.pow(10, 9));
+            float interval = Float.parseFloat(String.valueOf(et_r_time));
+            if(current_interval > interval){
+                try {
+                    fileSaver.writeFile("Sample "+String.valueOf(save_n));
+                    start_time = temp_time;
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            // increase length of arr
             int len_arr = arr_rcv.length;
             String[] new_arr = Arrays.copyOf(arr_rcv, len_arr+2);
             arr_rcv = new_arr;
@@ -338,7 +323,7 @@ public class MeasureActivity extends AppCompatActivity {
     public static void get_data(){
         final byte[] newBytes = bleService.readFromTransparentUART();
         t4 = System.nanoTime();
-        System.out.println("T4 : "+t4);
+        //System.out.println("T4 : "+t4);
         processIncomingData(newBytes);
     }
 
@@ -360,43 +345,6 @@ public class MeasureActivity extends AppCompatActivity {
         tv_ble.setText("connected");
     }
 }
-
-class continuous_req extends Thread{
-    @Override
-    public void run(){
-        MeasureActivity.arr_rcv = new String[2];
-        String sendData = "g";
-        int r_time = Integer.valueOf(String.valueOf(et_r_time.getText())) * 50 / 2;
-        for (int i = 0; i < r_time; i++) {
-            if (i == 0) {
-                MeasureActivity.t1 = System.nanoTime();
-                MeasureActivity.loop_time = (long) 10.0;
-            } else{
-                MeasureActivity.t5 = System.nanoTime();
-                System.out.println("T5 : "+ MeasureActivity.t5);
-                Float loop_time2 = (float) ((MeasureActivity.t5 - MeasureActivity.t1)/ Math.pow(10, 9));
-                System.out.println("One-loop : "+ loop_time2);
-                if (loop_time > loop_time2){
-                    loop_time = loop_time2;
-                }
-                System.out.println("Min One-loop : "+ loop_time);
-                MeasureActivity.t1 = MeasureActivity.t5;
-                bleService.writeToTransparentUART(sendData.getBytes());
-            }
-            try {
-                MeasureActivity.t2 = System.nanoTime();
-                System.out.println("T2 : "+ MeasureActivity.t2);
-                //System.out.println("BLE-Sleep : "+(MeasureActivity.t2 - MeasureActivity.t1)/(Math.pow(10, 9)));
-                Thread.sleep(100);
-                MeasureActivity.t3 = System.nanoTime();
-                System.out.println("T3 : "+ MeasureActivity.t3);
-            } catch (InterruptedException e) {
-                break;
-            }
-        }
-    }
-}
-
 
 
 
